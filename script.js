@@ -1,7 +1,7 @@
 const buttons = document.querySelectorAll(".calculator-buttons button");
 const display = document.querySelector(".calculator-display");
 let currentInput = "";
-let previousInput = "";
+let equation = "";
 let operator = "";
 
 buttons.forEach((button) => {
@@ -10,62 +10,35 @@ buttons.forEach((button) => {
 
     if ((buttonText >= "0" && buttonText <= "9") || buttonText === ".") {
       currentInput += buttonText;
-      display.value = currentInput;
+      display.value = equation + currentInput;
     } else if (buttonText === "C") {
       currentInput = "";
-      previousInput = "";
+      equation = "";
       operator = "";
       display.value = "";
     } else if (buttonText === "CE") {
       currentInput = "";
-      display.value = "";
+      display.value = equation;
     } else if (buttonText === "←") {
       currentInput = currentInput.slice(0, -1);
-      display.value = currentInput;
+      display.value = equation + currentInput;
     } else if (buttonText === "%") {
       currentInput = (parseFloat(currentInput) / 100).toString();
-      display.value = currentInput;
+      display.value = equation + currentInput;
     } else if (buttonText === "=") {
-      if (operator && previousInput !== "") {
-        currentInput = operate(
-          parseFloat(previousInput),
-          parseFloat(currentInput),
-          operator
-        ).toString();
-        display.value = currentInput;
-        previousInput = "";
-        operator = "";
-      }
+      equation += currentInput;
+      currentInput = evaluateEquation(equation).toString();
+      display.value = currentInput;
+      equation = "";
     } else {
-      if (currentInput === "") return;
-
-      if (previousInput !== "") {
-        previousInput = operate(
-          parseFloat(previousInput),
-          parseFloat(currentInput),
-          operator
-        ).toString();
-      } else {
-        previousInput = currentInput;
-      }
-
-      operator = buttonText;
+      equation += currentInput + buttonText;
+      display.value = equation;
       currentInput = "";
     }
   });
 });
 
-function operate(num1, num2, operator) {
-  switch (operator) {
-    case "+":
-      return num1 + num2;
-    case "-":
-      return num1 - num2;
-    case "*":
-      return num1 * num2;
-    case "/":
-      return num1 / num2;
-    default:
-      return num2;
-  }
+function evaluateEquation(equation) {
+  // Evaluate the equation respecting the order of operations
+  return Function('"use strict"; return (' + equation + ")")();
 }
